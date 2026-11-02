@@ -85,13 +85,13 @@ function FeeChart() {
 function Attendance() {
   const toast = useToast();
   return (
-    <section className="card">
+    <section className="card min-w-0">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <div><h2 className="text-[17px] font-semibold">Attendance & Student Demographics</h2><p className="mt-2 text-slate-500">Real-time gate check-in telemetry and absentee triage</p></div>
+        <div className="min-w-0"><h2 className="text-[17px] font-semibold">Attendance & Student Demographics</h2><p className="mt-2 text-slate-500">Real-time gate check-in telemetry and absentee triage</p></div>
         <span className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-2.5 py-1.5 text-xs text-indigo-700"><Radio size={12} /> Gate Terminals Active</span>
       </div>
-      <div className="mt-5 grid gap-5 lg:grid-cols-[300px_1fr]">
-        <div className="flex flex-col items-center gap-3.5 rounded-xl bg-indigo-50/70 p-5">
+      <div className="mt-5 grid min-w-0 gap-5 xl:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col items-center gap-3.5 rounded-xl bg-indigo-50/70 p-4 sm:p-5">
           <div className="relative size-[170px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -109,13 +109,13 @@ function Attendance() {
             <span className="text-red-600"><i className="mr-1.5 inline-block size-2.5 rounded-sm bg-red-600" />Unexcused: 14 (1.1%)</span>
           </div>
         </div>
-        <div>
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-semibold">Today's Absentee Watchlist (14)</h3>
             <button className="btn btn-primary btn-sm" onClick={() => toast("SMS queued for 14 parents")}><MessageSquare size={14} /> SMS All Parents</button>
           </div>
           {absentees.map((a) => (
-            <div key={a.name} className="my-2.5 flex items-center gap-3 rounded-lg bg-indigo-50/70 px-3 py-2.5">
+            <div key={a.name} className="my-2.5 flex min-w-0 items-start gap-3 rounded-lg bg-indigo-50/70 px-3 py-2.5">
               <span className="grid size-9 flex-none place-items-center rounded-full bg-pink-100 text-xs font-semibold text-pink-800">{a.i}</span>
               <div className="min-w-0 flex-1"><strong className="block">{a.name}</strong><small className="block truncate text-xs text-slate-500">{a.info}</small></div>
               <Badge tone={a.tone}>{a.tag}</Badge>
