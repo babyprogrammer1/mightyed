@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Calendar, ChevronDown, Bell } from "lucide-react";
+import { Search, Calendar, ChevronDown, Bell, Menu } from "lucide-react";
 import profile from "../assets/profile.png";
 import { useToast } from "../context/AppContext.jsx";
 
 const sessions = ["2026/2027 Academic Session - Term 3", "2026/2027 Academic Session - Term 2", "2026/2027 Academic Session - Term 1", "2025/2026 Academic Session - Term 3"];
 const initialNotes = ["Mock WAEC/NECO registration closes in 8 days", "12 fee adjustments await bursar sign-off", "SMS batch to parents was delivered"];
 
-export default function Topbar() {
+export default function Topbar({ sidebarOpen, onMenuClick }) {
   const nav = useNavigate();
   const toast = useToast();
   const headerRef = useRef(null);
@@ -26,8 +26,9 @@ export default function Topbar() {
   }, []);
 
   return (
-    <header ref={headerRef} className="sticky top-0 z-30 flex items-center gap-4 bg-white px-4 py-3.5 sm:px-6 print:hidden">
-      <form className="flex w-full max-w-sm items-center gap-2 rounded-xl border-[1.5px] border-slate-500 px-3.5 py-2.5 text-slate-500"
+    <header ref={headerRef} className="sticky top-0 z-30 flex items-center gap-3 bg-white px-4 py-3.5 sm:gap-4 sm:px-6 print:hidden">
+      {!sidebarOpen && <button className="icon-btn shrink-0" aria-label="Open navigation" onClick={onMenuClick}><Menu size={21} /></button>}
+      <form className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border-[1.5px] border-slate-500 px-3.5 py-2.5 text-slate-500 sm:max-w-sm"
         onSubmit={(e) => { e.preventDefault(); if (q.trim()) { nav(`/students?q=${encodeURIComponent(q.trim())}`); setQ(""); } }}>
         <Search size={16} />
         <input className="min-w-0 flex-1 bg-transparent text-ink outline-none" placeholder="Search" aria-label="Search" value={q} onChange={(e) => setQ(e.target.value)} />
