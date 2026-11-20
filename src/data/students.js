@@ -23,5 +23,5 @@ export const nextIds = (list, n) => {
   return Array.from({ length: n }, (_, i) => `MIS/2026/${String(max + i + 1).padStart(4, "0")}`);
 };
 
-const photos = [p1, p2, p3, p4, p5, p6];
-initial.forEach((s, i) => { s.photo = photos[i]; });
+export const studentPhotos = [p1, p2, p3, p4, p5, p6];
+initial.forEach((s, i) => { s.photo = studentPhotos[i]; });

@@ -4,6 +4,41 @@
 
 @layer base {
   body { @apply bg-surface font-sans text-sm text-ink; }
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    appearance: none;
+    cursor: pointer;
+    flex: none;
+    border: 1.5px solid #94a3b8;
+    border-radius: 4px;
+    background-color: #ffffff;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 11px 11px;
+  }
+
+  input[type="checkbox"]:hover {
+    border-color: #b44cf5;
+  }
+
+  input[type="checkbox"]:checked {
+    border-color: #b44cf5;
+    background-color: #b44cf5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.25 8.25 6.25 11.25 12.75 4.75' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+
+  input[type="checkbox"]:indeterminate {
+    border-color: #b44cf5;
+    background-color: #b44cf5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8h8' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+
+  input[type="checkbox"]:focus-visible {
+    outline: 2px solid #e9d5ff;
+    outline-offset: 2px;
+  }
 }
 @layer components {
   .card { @apply rounded-2xl bg-white p-5; }

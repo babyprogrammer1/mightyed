@@ -187,6 +187,7 @@ function RightColumn() {
 }
 
 export default function Dashboard() {
+  // Page flow: summarize school activity and expose the highest-priority review actions for each department.
   const toast = useToast();
   const ledger = () => {
     downloadCSV("daily-ledger.csv", [

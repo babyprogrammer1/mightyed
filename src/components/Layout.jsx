@@ -19,7 +19,7 @@ export default function Layout() {
       {sidebarOpen && <button className="fixed inset-0 z-30 bg-slate-950/30 lg:hidden" aria-label="Close navigation" onClick={() => setSidebarOpen(false)} />}
       <div className={`min-w-0 transition-[margin] duration-200 ${sidebarOpen ? "lg:ml-[272px]" : ""}`}>
         <Topbar sidebarOpen={sidebarOpen} onMenuClick={() => setSidebarOpen((open) => !open)} />
-        <main className="p-4 sm:p-6"><Outlet /></main>
+        <main className="min-w-0 overflow-x-hidden p-4 sm:p-6"><Outlet /></main>
       </div>
     </div>
   );

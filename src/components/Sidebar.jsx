@@ -14,7 +14,7 @@ const groups = [
   ]},
   { title: "Staff Management", items: [
     { to: "/staff", label: "Staff Directory & Roles", icon: PeopleIcon },
-    { to: "/access-control", label: "Role-Based Access Control", icon: RoleBasedIcon },
+    { to: "/role-access", label: "Role-Based Access Control", icon: RoleBasedIcon },
   ]},
   { title: "Fee Management & Financials", items: [
     { to: "/fee-management", label: "Fee Management Overview", icon: DashboardIcon },

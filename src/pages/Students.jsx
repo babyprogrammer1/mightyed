@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useReactTable, getCoreRowModel, getFilteredRowModel, getSortedRowModel, getPaginationRowModel, flexRender } from "@tanstack/react-table";
-import { Upload, Download, UserPlus, Search, Users, Percent, FileText, UserCheck, ChevronDown, Pencil, MoreVertical, Award, Check, Minus } from "lucide-react";
+import { Upload, Download, UserPlus, Search, Users, Percent, FileText, UserCheck, ChevronDown, Pencil, MoreVertical, Award } from "lucide-react";
 import Badge from "../components/Badge.jsx";
 import Avatar from "../components/Avatar.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
@@ -11,20 +11,18 @@ import { useApp } from "../context/AppContext.jsx";
 import { idToSlug, levelOf, nextIds } from "../data/students.js";
 import { downloadCSV, parseCSV } from "../utils.js";
 import { PeopleIcon, RoleBasedIcon } from "../components/icons.jsx";
+import ProfileDrawer from "../components/ProfileDrawer.jsx";
 
 const feeTone = (f) => (f === "Paid" ? "green" : f.startsWith("Partial") ? "blue" : f === "Defaulter" ? "red" : "purple");
-const CHK = "size-[18px] cursor-pointer appearance-none rounded-[5px] border border-slate-500 bg-white checked:border-brand checked:bg-brand";
+const CHK = "size-[18px] cursor-pointer";
 function Checkbox({ checked, indeterminate = false, onChange, label }) {
   const partial = indeterminate && !checked;
+  const ref = (element) => {
+    if (element) element.indeterminate = partial;
+  };
   return (
     <label className="relative inline-grid size-[18px] cursor-pointer place-items-center" onClick={(e) => e.stopPropagation()}>
-      <input type="checkbox" aria-label={label} checked={checked} onChange={onChange}
-        className={`${CHK} ${partial ? "border-brand bg-brand" : ""}`} />
-      {(checked || partial) && (
-        <span className="pointer-events-none absolute text-white">
-          {partial ? <Minus size={12} strokeWidth={3} /> : <Check size={12} strokeWidth={3} />}
-        </span>
-      )}
+      <input ref={ref} type="checkbox" aria-label={label} checked={checked} onChange={onChange} className={CHK} />
     </label>
   );
 }
@@ -61,7 +59,9 @@ const StatusChip = ({ v }) => (
 );
 
 export default function Students() {
+  // Page flow: filter and select roster rows, edit or inspect a student, then import, export, or enroll records.
   const { students, addStudents, updateStudent, deleteStudent, toast } = useApp();
+  const nav = useNavigate();
   const [params] = useSearchParams();
   const [globalFilter, setGlobalFilter] = useState(params.get("q") || "");
   const urlQuery = params.get("q") || "";
@@ -71,11 +71,22 @@ export default function Students() {
   const [klass, setKlass] = useState("All");
   const [arm, setArm] = useState("All");
   const [sorting, setSorting] = useState([]);
-  const [rowSelection, setRowSelection] = useState({ "MIS/2024/0142": true, "MIS/2024/0188": true, "MIS/2024/0091": true });
+  const [rowSelection, setRowSelection] = useState({});
   const [form, setForm] = useState(null); // null | "new" | student
   const [menu, setMenu] = useState(null);
+  const [drawer, setDrawer] = useState(null); // null | student
   const menuRef = useRef(null);
   const fileRef = useRef(null);
+  const closeDrawer = () => {
+    if (drawer) {
+      setRowSelection((current) => {
+        const next = { ...current };
+        delete next[drawer.id];
+        return next;
+      });
+    }
+    setDrawer(null);
+  };
 
   useEffect(() => {
     const closeOnOutsidePointer = (e) => {
@@ -93,13 +104,25 @@ export default function Students() {
   const columns = [
     { id: "select", enableSorting: false,
       header: ({ table }) => <Checkbox label="Select all" checked={table.getIsAllPageRowsSelected()} indeterminate={table.getIsSomePageRowsSelected()} onChange={table.getToggleAllPageRowsSelectedHandler()} />,
-      cell: ({ row }) => <Checkbox label={`Select ${row.original.name}`} checked={row.getIsSelected()} onChange={row.getToggleSelectedHandler()} /> },
+      cell: ({ row }) => <Checkbox
+        label={`Select ${row.original.name}`}
+        checked={row.getIsSelected()}
+        onChange={(e) => {
+          row.getToggleSelectedHandler()(e);
+          setDrawer(e.target.checked ? row.original : null);
+        }}
+      /> },
     { accessorKey: "name", header: "STUDENT NAME & ID",
       cell: ({ row }) => { const s = row.original; return (
         <div className="flex items-center gap-2.5">
           <Avatar student={s} selected={row.getIsSelected()} />
           <div>
-            <Link to={`/students/${idToSlug(s.id)}`} className={`block font-medium hover:underline ${row.getIsSelected() ? "text-brand" : ""}`}>{s.name}</Link>
+            <span className={`block font-medium ${row.getIsSelected() ? "text-brand" : ""}`}>{s.name}</span>
+            {/* <button
+              onClick={(e) => { e.stopPropagation(); setDrawer(s); }}
+              className={`block text-left font-medium hover:underline ${row.getIsSelected() ? "text-brand" : ""}`}>
+              {s.name}
+            </button> */}
             <code className="font-mono text-[11px] font-semibold text-slate-500">{s.id}</code>
           </div>
         </div>); } },
@@ -113,12 +136,13 @@ export default function Students() {
     { id: "actions", header: "ACTIONS", enableSorting: false,
       cell: ({ row: { original: s } }) => (
         <div className="flex items-center justify-end gap-1 text-slate-500">
-          <button className="icon-btn" aria-label={`Edit ${s.name}`} onClick={() => setForm(s)}><Pencil size={14} /></button>
+          <button className="icon-btn" aria-label={`Edit ${s.name}`} onClick={(e) => {e.stopPropagation(); setForm(s);}}><Pencil size={14} /></button>
           <div ref={menu === s.id ? menuRef : null} className="relative">
             <button className="icon-btn" aria-label="More actions" onClick={() => setMenu(menu === s.id ? null : s.id)}><MoreVertical size={14} /></button>
             {menu === s.id && (
               <div className="pop min-w-40 text-ink">
-                <Link className="pop-item" to={`/students/${idToSlug(s.id)}`}>View profile</Link>
+                <button className="pop-item" onClick={() => {setMenu(null); setDrawer(s);}}>View profile</button>
+                <Link className="pop-item" to={`/students/${idToSlug(s.id)}`} onClick={() => setMenu(null)}>Full profile page</Link>
                 <button className="pop-item" onClick={() => { navigator.clipboard?.writeText(s.id); setMenu(null); toast(`Copied ${s.id}`); }}>Copy ID</button>
                 <button className="pop-item text-red-600" onClick={() => { setMenu(null); if (window.confirm(`Delete ${s.name}?`)) { deleteStudent(s.id); toast("Student deleted"); } }}>Delete</button>
               </div>
@@ -177,9 +201,9 @@ export default function Students() {
         </div>
         <div className="flex flex-wrap gap-2.5">
           <input ref={fileRef} type="file" accept=".csv" hidden onChange={onImport} />
-          <button className="btn btn-ghost" onClick={() => fileRef.current.click()}><Upload size={14} /> Import Roaster</button>
+          <button className="btn btn-ghost" onClick={() => fileRef.current.click()}><Upload size={14} /> Import Roster</button>
           <button className="btn btn-ghost" onClick={() => { downloadCSV("students.csv", toCsv(table.getFilteredRowModel().rows.map((r) => r.original))); toast("Roster exported"); }}><Download size={14} /> Export CSV/Excel</button>
-          <button className="btn btn-primary" onClick={() => setForm("new")}><UserPlus size={14} /> Enroll New Student</button>
+          <button className="btn btn-primary" onClick={() => nav("/enroll")}><UserPlus size={14} /> Enroll New Student</button>
         </div>
       </div>
 
@@ -224,7 +248,13 @@ export default function Students() {
             <tbody>
               {table.getRowModel().rows.map((row) => (
                 <tr key={row.id} className={`cursor-pointer border-t border-slate-100 ${row.getIsSelected() ? "bg-blue-50" : ""}`}
-                  onClick={(e) => { if (!e.target.closest("a,button,input,label,select")) row.toggleSelected(); }}>
+                onClick={(e) => {
+                  if (!e.target.closest("a,button,input,label,select")) {
+                    const nextSelected = !row.getIsSelected();
+                    row.toggleSelected();
+                    setDrawer(nextSelected ? row.original : null);
+                  }
+                }}>
                   {row.getVisibleCells().map((c) => <td key={c.id} className="px-3 py-3 align-middle">{flexRender(c.column.columnDef.cell, c.getContext())}</td>)}
                 </tr>
               ))}
@@ -251,6 +281,12 @@ export default function Students() {
         </div>
       </section>
       </div>
+      {drawer && (
+        <>
+          <div className="fixed inset-0 z-30" onClick={closeDrawer} />
+          <ProfileDrawer student={drawer} onClose={closeDrawer} />
+        </>
+      )}
     </div>
   );
 }
